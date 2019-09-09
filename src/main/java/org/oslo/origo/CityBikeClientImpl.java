@@ -10,11 +10,13 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpBackOffUnsuccessfulResponseHandler;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.common.base.Joiner;
 
 class CityBikeClientImpl implements CityBikeClient {
@@ -30,10 +32,12 @@ class CityBikeClientImpl implements CityBikeClient {
 
 	private HttpRequestFactory httpRequestFactory;
 	private ObjectMapper objectMapper;
+	private ExponentialBackOff exponentialBackOff;
 
 	public CityBikeClientImpl() {
 		httpRequestFactory = createFactory();
 		objectMapper = new ObjectMapper();
+		exponentialBackOff = createBackOff();
 	}
 
 	public List<Station> getStationsCompleteStatus() throws Exception {
@@ -48,8 +52,9 @@ class CityBikeClientImpl implements CityBikeClient {
 				return s1;
 			});
 		});
-		
-		List<Station> result = stationsInfoMap.values().stream().sorted((s1,s2) -> s1.getName().compareTo(s2.getName())).collect(Collectors.toList());
+
+		List<Station> result = stationsInfoMap.values().stream()
+				.sorted((s1, s2) -> s1.getName().compareTo(s2.getName())).collect(Collectors.toList());
 		LOGGER.info(format(result));
 		return result;
 	}
@@ -57,6 +62,7 @@ class CityBikeClientImpl implements CityBikeClient {
 	private List<Station> getStations(String url) throws Exception {
 		HttpRequest httpRequest = httpRequestFactory.buildGetRequest(new CityBikeUrl(url));
 		addCustomHeader(httpRequest);
+		httpRequest.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(exponentialBackOff));
 		String rawResponse = httpRequest.execute().parseAsString();
 		ApiBase apiBase = parseJson(rawResponse);
 		return apiBase.getApiDataWrapper().getStations();
@@ -64,6 +70,11 @@ class CityBikeClientImpl implements CityBikeClient {
 
 	private HttpRequestFactory createFactory() {
 		return HTTP_TRANSPORT.createRequestFactory();
+	}
+
+	private ExponentialBackOff createBackOff() {
+		return new ExponentialBackOff.Builder().setInitialIntervalMillis(500).setMaxElapsedTimeMillis(900000)
+				.setMaxIntervalMillis(6000).setMultiplier(1.5).setRandomizationFactor(0.5).build();
 	}
 
 	private void addCustomHeader(HttpRequest httpRequest) {
