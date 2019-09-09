@@ -31,6 +31,7 @@ public class CityBikeCrawler {
 		CityBikeClient cityBikeClient = new CityBikeClientImpl();
 		try {
 			List<Station> stations = cityBikeClient.getStationsCompleteStatus();
+			LOGGER.info("\n *** Saving stations list to stations.csv ***");
 			dumpToFile(stations);
 
 		} catch (Exception e) {
