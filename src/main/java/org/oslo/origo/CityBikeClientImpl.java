@@ -17,14 +17,14 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.ExponentialBackOff;
-import com.google.common.base.Joiner;
+//import com.google.common.base.Joiner;
 
 class CityBikeClientImpl implements CityBikeClient {
 
 	private static final String CUSTOM_HEADER_NAME = "client-name";
 	private static final String CUSTOM_HEADER_VALUE = "anders-city-bike-crawler";
-	private static final String STATION_INFO_URL = "http://gbfs.urbansharing.com/oslobysykkel.no/station_information.json";
-	private static final String STATION_STATUS_URL = "http://gbfs.urbansharing.com/oslobysykkel.no/station_status.json";
+	public static final String STATION_INFO_URL = "http://gbfs.urbansharing.com/oslobysykkel.no/station_information.json";
+	public static final String STATION_STATUS_URL = "http://gbfs.urbansharing.com/oslobysykkel.no/station_status.json";
 
 	private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
@@ -38,6 +38,12 @@ class CityBikeClientImpl implements CityBikeClient {
 		httpRequestFactory = createFactory();
 		objectMapper = new ObjectMapper();
 		exponentialBackOff = createBackOff();
+	}
+	
+	public CityBikeClientImpl(HttpRequestFactory httpRequestFactory, ExponentialBackOff exponentialBackOff) {
+		this.httpRequestFactory = httpRequestFactory;
+		this.exponentialBackOff = exponentialBackOff;
+		objectMapper = new ObjectMapper();
 	}
 
 	public List<Station> getStationsCompleteStatus() throws Exception {
@@ -68,11 +74,11 @@ class CityBikeClientImpl implements CityBikeClient {
 		return apiBase.getApiDataWrapper().getStations();
 	}
 
-	private HttpRequestFactory createFactory() {
+	public static HttpRequestFactory createFactory() {
 		return HTTP_TRANSPORT.createRequestFactory();
 	}
 
-	private ExponentialBackOff createBackOff() {
+	public static ExponentialBackOff createBackOff() {
 		return new ExponentialBackOff.Builder().setInitialIntervalMillis(500).setMaxElapsedTimeMillis(900000)
 				.setMaxIntervalMillis(6000).setMultiplier(1.5).setRandomizationFactor(0.5).build();
 	}
@@ -90,7 +96,7 @@ class CityBikeClientImpl implements CityBikeClient {
 		return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(stations);
 	}
 
-	private static class CityBikeUrl extends GenericUrl {
+	public static class CityBikeUrl extends GenericUrl {
 
 		public CityBikeUrl(String url) {
 			super(url);

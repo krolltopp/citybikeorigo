@@ -12,10 +12,10 @@ public class Station {
 	@JsonProperty(required = false)
 	private String name;
 	
-	@JsonProperty(value = "num_docks_available", required = false)
+	@JsonProperty(value = "num_docks_available", required = false, defaultValue = "-1")
 	private int numDocksAvailable;
 	
-	@JsonProperty(value = "num_bikes_available", required = false)
+	@JsonProperty(value = "num_bikes_available", required = false,  defaultValue = "-1")
 	private int numBikesAvailable;
 
 
