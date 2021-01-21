@@ -11,7 +11,7 @@
 		<maven.compiler.target>11</maven.compiler.target>
 		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
 		<google-http-client.version>1.31.0</google-http-client.version>
-		<jackson-databind.version>2.9.9.3</jackson-databind.version>
+		<jackson-databind.version>2.9.10.7</jackson-databind.version>
 		<opencsv.version>4.6</opencsv.version>
 		<junit-jupiter.version>5.5.2</junit-jupiter.version>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
